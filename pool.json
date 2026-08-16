@@ -1,5 +1,6 @@
 {
-  "hinweis": "Teilnehmer und Team-Zuteilung des Pools. Die Ergebnisse holt die Seite live bei ESPN. Format der Zuteilung: \"KUERZEL\": \"Name\".",
+  "hinweis": "Teilnehmer und Team-Zuteilung des Pools. Ergebnisse kommen live von ESPN. Format der Zuteilung: \"KUERZEL\": \"Name\".",
+  "season": 2026,
   "rules": {
     "win": 3,
     "tie": 1,
@@ -16,5 +17,37 @@
     "Marco"
   ],
   "teams": {
+    "ARI": "Marco",
+    "ATL": "Misch",
+    "BAL": "Roger",
+    "BUF": "Kässu",
+    "CAR": "Misch",
+    "CHI": "Nathi",
+    "CIN": "Roger",
+    "CLE": "Harry",
+    "DAL": "Nathi",
+    "DEN": "Harry",
+    "DET": "Aaron",
+    "GB": "Kässu",
+    "HOU": "Harry",
+    "IND": "Nathi",
+    "JAX": "Misch",
+    "KC": "Roger",
+    "LAC": "Aaron",
+    "LAR": "Aaron",
+    "LV": "Marco",
+    "MIA": "Marco",
+    "MIN": "Kässu",
+    "NE": "Marco",
+    "NO": "Aaron",
+    "NYG": "Harry",
+    "NYJ": "Harry",
+    "PHI": "Marco",
+    "PIT": "Nathi",
+    "SEA": "Misch",
+    "SF": "Nathi",
+    "TB": "Misch",
+    "TEN": "Kässu",
+    "WAS": "Harry"
   }
 }

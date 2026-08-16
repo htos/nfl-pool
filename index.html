@@ -179,6 +179,36 @@ body.view .editonly{display:none !important}
 .note{color:var(--muted);font-size:13px;margin:12px 0 0;max-width:72ch}
 footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
 
+/* ---------- Symbolleiste unten (nur schmale Displays) ---------- */
+.tabbar{display:none}
+@media (max-width:760px){
+  .tabbar{
+    display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:50;
+    background:var(--card);border-top:2px solid var(--slab);padding-bottom:env(safe-area-inset-bottom)
+  }
+  .tabbar button{
+    border:none;background:none;border-radius:0;padding:9px 4px 11px;color:var(--muted);
+    display:flex;flex-direction:column;align-items:center;gap:5px;
+    font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase
+  }
+  .tabbar button:hover{border-color:transparent}
+  .tabbar svg{width:23px;height:23px;flex:none}
+  .tabbar button[aria-current="true"]{color:var(--ink)}
+  .tabbar button[aria-current="true"] svg{stroke-width:2.3}
+  .tabbar .act{color:var(--ink)}
+  .tabbar .act svg{
+    width:27px;height:27px;padding:4px;border-radius:50%;
+    background:var(--slab);color:#fff;margin:-2px 0
+  }
+  .tabbar .act:disabled{opacity:.5}
+  body{padding-bottom:80px}
+  .sec{scroll-margin-top:14px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .tabbar .act.busy svg{animation:spin .9s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+}
+
 @media (max-width:620px){
   .wrap{padding:0 14px 70px}
   .entry{padding:14px;grid-template-columns:auto 1fr auto;gap:0 12px}
@@ -213,7 +243,7 @@ footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);color:v
     </div>
   </noscript>
 
-  <div class="sec">
+  <div class="sec" id="s-ergebnisse">
     <h2>Ergebnisse</h2>
     <p>Kommen von ESPN, ohne Zutun.</p>
   </div>
@@ -234,7 +264,7 @@ footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);color:v
     <div class="status" id="status">Lade Ergebnisse.</div>
   </div>
 
-  <div class="sec">
+  <div class="sec" id="s-teilnehmer">
     <h2>Teilnehmer</h2>
     <p>Eine Person kann beliebig viele Teams halten.</p>
   </div>
@@ -244,20 +274,20 @@ footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);color:v
     <button class="solid" id="add-person">Person hinzufügen</button>
   </div>
 
-  <div class="sec">
+  <div class="sec" id="s-superbowl">
     <h2>Super Bowl</h2>
     <p>Zweite Wertung: Wer den Champion besitzt, gewinnt.</p>
   </div>
   <div class="champ" id="champ"></div>
 
-  <div class="sec">
+  <div class="sec" id="s-rangliste">
     <h2>Rangliste</h2>
     <p id="rank-sub">Punkte aller Teams einer Person zusammengezählt.</p>
   </div>
   <div class="board" id="board"></div>
   <p class="legend">Jeder Balken zeigt, welches Team wie viel beiträgt – ein Segment pro Team in dessen Farbe.</p>
 
-  <div class="sec">
+  <div class="sec" id="s-teams">
     <h2>Teams</h2>
     <p id="teams-sub">Alle 32 Teams mit Besitzer und Punktestand.</p>
   </div>
@@ -278,7 +308,7 @@ footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);color:v
     </table>
   </div>
 
-  <div class="sec">
+  <div class="sec" id="s-punkte">
     <h2>Punkte</h2>
     <p>Gelten für alle Teams gleich.</p>
   </div>
@@ -303,7 +333,7 @@ footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);color:v
     </div>
   </div>
 
-  <div class="sec">
+  <div class="sec" id="s-daten">
     <h2>Daten</h2>
     <p>Aufstellung bearbeiten und sichern.</p>
   </div>
@@ -316,6 +346,13 @@ footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);color:v
 
   <footer>Läuft vollständig im Browser · Ergebnisse und Logos von ESPN</footer>
 </div>
+
+<nav class="tabbar" id="tabbar" aria-label="Navigation">
+  <button data-go="s-superbowl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v1a3 3 0 0 0 3 3"/><path d="M17 6h3v1a3 3 0 0 1-3 3"/><path d="M12 14v3.5"/><path d="M8.5 21h7l-.9-3.5h-5.2L8.5 21Z"/></svg><span>Champion</span></button>
+  <button data-go="s-rangliste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="5" height="17" rx="1.2"/><rect x="9.5" y="9" width="5" height="12" rx="1.2"/><rect x="16" y="14" width="5" height="7" rx="1.2"/></svg><span>Rangliste</span></button>
+  <button data-go="s-teams"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg><span>Teams</span></button>
+  <button class="act" id="tab-sync"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 12a8.5 8.5 0 1 1-2.49-6.01"/><path d="M20.5 3.5v5.5h-5.5"/></svg><span>Nachladen</span></button>
+</nav>
 <script>
 const NFL = [
   ["AFC Ost",[["BUF","Buffalo Bills","buf","#C60C30"],["MIA","Miami Dolphins","mia","#008E97"],["NE","New England Patriots","ne","#C60C30"],["NYJ","New York Jets","nyj","#1C9E5C"]]],
@@ -579,6 +616,8 @@ function setStatus(msg, err){
 function setPulse(text, cls){
   $("pulse-text").textContent = text;
   $("pulse").className = "pulse " + (cls || "");
+  const tab = $("tab-sync");
+  if(tab){ tab.classList.toggle("busy", cls === "busy"); tab.disabled = cls === "busy"; }
 }
 
 async function syncResults(opts){
@@ -753,6 +792,37 @@ $("reset-all").addEventListener("click", () => {
 render();
 setPulse("Lädt", "busy");
 loadSharedPool().then(() => syncResults({silent:true}));
+
+
+/* ---------------- Symbolleiste unten ---------------- */
+(function(){
+  const bar = $("tabbar");
+  if(!bar) return;
+  const tabs = [...bar.querySelectorAll("button[data-go]")];
+  const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  bar.addEventListener("click", e => {
+    const b = e.target.closest ? e.target.closest("button") : null;
+    if(!b) return;
+    if(b.id === "tab-sync"){ syncResults(viewMode ? {silent:true} : undefined); return; }
+    const el = $(b.dataset.go);
+    if(el) el.scrollIntoView({behavior: smooth ? "smooth" : "auto", block: "start"});
+  });
+
+  const mark = id => tabs.forEach(t =>
+    t.setAttribute("aria-current", t.dataset.go === id ? "true" : "false"));
+  mark("s-rangliste");
+
+  if(!("IntersectionObserver" in window)) return;
+  const tops = new Map();
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => tops.set(en.target.id, en.isIntersecting ? en.boundingClientRect.top : Infinity));
+    let best = null, min = Infinity;
+    tops.forEach((top, id) => { if(top < min){ min = top; best = id; } });
+    if(best) mark(best);
+  }, {rootMargin: "-8% 0px -70% 0px"});
+  tabs.forEach(t => { const el = $(t.dataset.go); if(el) io.observe(el); });
+})();
 </script>
 </body>
 </html>

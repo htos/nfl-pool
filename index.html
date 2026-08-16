@@ -266,7 +266,7 @@ footer{margin-top:44px;color:var(--muted);font-size:12px;font-family:var(--mono)
     <div class="sync-main">
       <div>
         <div class="k">Ergebnisse abrufen</div>
-        <p class="sub">Holt Siege, Unentschieden, Playoff-Siege und den Super-Bowl-Sieger für alle 32 Teams von ESPN. Zuteilungen, Teilnehmer und Punkteregeln bleiben unberührt.</p>
+        <p class="sub">Beim Öffnen der Seite werden Siege, Unentschieden, Playoff-Siege und der Super-Bowl-Sieger automatisch bei ESPN geholt. Der Knopf ist nur zum Nachladen zwischendurch da.</p>
       </div>
       <div class="toolbar">
         <span class="edit-only" style="display:flex;align-items:center;gap:8px">
@@ -688,24 +688,32 @@ async function syncResults(opts){
   let games = 0, failed = 0, tried = 0, champion = null, sbWeek = null;
 
   try{
+    let zeroStreak = 0, lastPlayed = 0;
     for(let w = 1; w <= 18; w++){
-      setSync("Regular Season – Woche " + w + " von 18 …", "busy");
+      setSync("Regular Season – Woche " + w + " …", "busy");
       tried++;
-      try{ games += collectWeek(await espnWeek(season, 2, w), tally, null).counted; }
+      let counted = 0;
+      try{ counted = collectWeek(await espnWeek(season, 2, w), tally, null).counted; }
       catch(err){ failed++; }
+      games += counted;
+      if(counted > 0){ zeroStreak = 0; lastPlayed = w; }
+      else if(++zeroStreak >= 2) break;   // zwei leere Wochen: hier ist die Saison zu Ende
       await sleep(120);
     }
-    for(let w = 1; w <= 5; w++){
-      if(w === 4) continue;                 // Woche 4 der Postseason ist der Pro Bowl
-      setSync("Playoffs – Runde " + w + " …", "busy");
-      tried++;
-      try{
-        const r = collectWeek(await espnWeek(season, 3, w), tally, "po");
-        games += r.counted;
-        if(r.champion){ champion = r.champion; }
-        else if(w === 5 && r.counted === 1){ sbWeek = true; }
-      }catch(err){ failed++; }
-      await sleep(120);
+
+    if(lastPlayed >= 18){
+      for(let w = 1; w <= 5; w++){
+        if(w === 4) continue;             // Woche 4 der Postseason ist der Pro Bowl
+        setSync("Playoffs – Runde " + w + " …", "busy");
+        tried++;
+        try{
+          const r = collectWeek(await espnWeek(season, 3, w), tally, "po");
+          games += r.counted;
+          if(r.champion){ champion = r.champion; }
+          else if(w === 5 && r.counted === 1){ sbWeek = true; }
+        }catch(err){ failed++; }
+        await sleep(120);
+      }
     }
   } finally {
     btn.disabled = false;
@@ -800,7 +808,7 @@ $("save-pool").addEventListener("click", () => {
 
 /* ---------------- Start ---------------- */
 render();
-loadSharedPool().then(ok => { if(ok) syncResults({silent:true}); });
+loadSharedPool().then(() => syncResults({silent:true}));
 </script>
 </body>
 </html>

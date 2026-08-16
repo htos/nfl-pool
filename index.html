@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NFL-Pool – Punktestand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0B1220;
+  --panel:#141E33;
+  --panel2:#101a2c;
+  --line:#26344B;
+  --chalk:#EEF2F8;
+  --muted:#8B9BB4;
+  --amber:#FFB23F;
+  --cyan:#57D0E8;
+  --slate:#5A7BA8;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--ink);
+  color:var(--chalk);
+  font-family:var(--body);
+  font-size:15px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 20px 80px}
+
+/* ---------- Kopf ---------- */
+.eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--amber);margin:0 0 6px
+}
+h1{
+  font-family:var(--display);font-weight:700;font-size:clamp(38px,7vw,62px);
+  line-height:.95;letter-spacing:.01em;text-transform:uppercase;margin:0 0 8px
+}
+.lede{color:var(--muted);max-width:60ch;margin:0 0 28px}
+
+h2{
+  font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.06em;
+  font-size:22px;margin:0;
+}
+.sec-head{
+  display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  border-bottom:1px solid var(--line);padding-bottom:8px;margin:40px 0 16px;flex-wrap:wrap
+}
+.sec-head p{margin:0;color:var(--muted);font-size:13px}
+
+/* ---------- Panels ---------- */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:16px}
+
+/* ---------- Scoreboard (Wertung 1) ---------- */
+.board{display:flex;flex-direction:column;gap:6px}
+.row{
+  display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;
+  background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--slate);
+  border-radius:3px;padding:12px 14px
+}
+.row.lead{border-left-color:var(--amber);background:linear-gradient(90deg,#1a2440,var(--panel) 55%)}
+.rank{font-family:var(--mono);font-size:20px;color:var(--muted);text-align:right}
+.row.lead .rank{color:var(--amber)}
+.who{min-width:0}
+.name{font-family:var(--display);font-size:24px;font-weight:600;letter-spacing:.02em;line-height:1.1}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.chip{
+  font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--muted);
+  border:1px solid var(--line);border-radius:2px;padding:1px 5px
+}
+.chip.sb{color:var(--cyan);border-color:#2a5a68}
+.pts{font-family:var(--mono);font-size:30px;font-weight:600;color:var(--amber);text-align:right;line-height:1}
+.pts small{display:block;font-size:10px;letter-spacing:.18em;color:var(--muted);font-weight:400;margin-top:4px}
+
+/* Signature: Punkte-Zusammensetzung als Balken */
+.bar{display:flex;height:5px;margin-top:9px;background:#0d1626;border-radius:3px;overflow:hidden}
+.bar span{display:block;height:100%}
+.bar .b-rs{background:var(--slate)}
+.bar .b-po{background:var(--amber)}
+.bar .b-sb{background:var(--cyan)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px}
+
+/* ---------- Super-Bowl-Karte (Wertung 2) ---------- */
+.sbcard{
+  margin-top:14px;background:var(--panel2);border:1px solid #2a5a68;border-radius:4px;padding:16px 18px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap
+}
+.sbcard .k{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan)}
+.sbcard .v{font-family:var(--display);font-size:30px;font-weight:600;line-height:1.1}
+.sbcard .v.empty{color:var(--muted);font-size:20px}
+.sbcard .sub{color:var(--muted);font-size:13px;margin-top:2px}
+
+/* ---------- Formulare ---------- */
+input[type=text],input[type=number],select{
+  background:var(--panel2);color:var(--chalk);border:1px solid var(--line);border-radius:3px;
+  padding:7px 9px;font-family:var(--body);font-size:14px
+}
+input[type=number]{font-family:var(--mono);width:64px;text-align:center}
+select{max-width:100%}
+input:focus-visible,select:focus-visible,button:focus-visible{
+  outline:2px solid var(--amber);outline-offset:2px
+}
+button{
+  background:var(--panel);color:var(--chalk);border:1px solid var(--line);border-radius:3px;
+  padding:8px 14px;font-family:var(--body);font-size:14px;font-weight:500;cursor:pointer
+}
+button:hover{border-color:var(--amber);color:var(--amber)}
+button.primary{background:var(--amber);color:#12192a;border-color:var(--amber);font-weight:600}
+button.primary:hover{background:#ffc266;color:#12192a}
+button.ghost{border-color:transparent;color:var(--muted);padding:4px 8px}
+button.ghost:hover{color:var(--amber)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* ---------- Teilnehmer ---------- */
+.people{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.person{
+  display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);
+  border-radius:3px;padding:6px 6px 6px 12px
+}
+.person span{font-family:var(--display);font-size:18px;letter-spacing:.02em}
+.empty-note{color:var(--muted);font-size:14px;margin:0 0 14px}
+
+/* ---------- Tabelle ---------- */
+.tablescroll{overflow-x:auto;border:1px solid var(--line);border-radius:4px}
+table{border-collapse:collapse;width:100%;min-width:720px}
+th{
+  font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  text-align:left;padding:10px;background:var(--panel2);border-bottom:1px solid var(--line);white-space:nowrap
+}
+th.num,td.num{text-align:center}
+td{padding:7px 10px;border-bottom:1px solid #1c2740;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr.owned td{background:#131d31}
+tr.divhead td{
+  background:var(--panel2);font-family:var(--mono);font-size:10px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--amber);padding:8px 10px
+}
+.team-name{font-family:var(--display);font-size:19px;letter-spacing:.02em;white-space:nowrap}
+.team-abbr{font-family:var(--mono);font-size:11px;color:var(--muted);margin-right:8px}
+td.pt{font-family:var(--mono);color:var(--amber);text-align:right;white-space:nowrap}
+input[type=radio]{accent-color:var(--cyan);width:16px;height:16px}
+
+/* ---------- Modus ---------- */
+.modebar{
+  display:none;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--cyan);
+  border-radius:4px;padding:12px 16px;margin:0 0 26px
+}
+.modebar.on{display:flex}
+.modebar .k{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan)}
+.modebar p{margin:4px 0 0;color:var(--muted);font-size:13px;max-width:58ch}
+body.viewmode .edit-only{display:none !important}
+
+/* ---------- Abruf ---------- */
+.sync{margin-bottom:14px}
+.sync-main{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap}
+.sync .k{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--amber)}
+.sync .sub{color:var(--muted);font-size:13px;margin:5px 0 0;max-width:52ch}
+.sync-status{
+  margin-top:14px;padding-top:12px;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.03em
+}
+.sync-status.busy{color:var(--amber)}
+.sync-status.bad{color:#FF8A80}
+.sync-status.good{color:var(--cyan)}
+button[disabled]{opacity:.5;cursor:progress}
+
+/* ---------- Regeln ---------- */
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.rule label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.rule small{display:block;color:var(--muted);font-size:12px;margin-top:5px;line-height:1.4}
+
+/* ---------- Daten ---------- */
+.hint{color:var(--muted);font-size:13px;margin:12px 0 0;max-width:70ch}
+.warn{border-left:3px solid var(--amber);padding-left:12px}
+footer{margin-top:44px;color:var(--muted);font-size:12px;font-family:var(--mono);letter-spacing:.06em}
+
+@media (max-width:640px){
+  .row{grid-template-columns:34px 1fr auto;gap:10px;padding:10px}
+  .name{font-size:20px}
+  .pts{font-size:24px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .row,.sbcard{transition:border-color .18s ease,background .18s ease}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <noscript>
+    <div class="panel" style="border-color:var(--amber);margin-bottom:24px">
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);margin-bottom:6px">Seite unvollständig</div>
+      <p style="margin:0;color:var(--chalk)">Diese Seite baut Teamliste und Rangliste beim Öffnen selbst auf und braucht dafür JavaScript. In einer Datei- oder Mail-Vorschau bleiben die Tabellen deshalb leer. Öffne die Datei in einem Browser – Chrome, Edge oder Firefox.</p>
+    </div>
+  </noscript>
+
+  <p class="eyebrow">Saison-Pool · 32 Teams · 2 Wertungen</p>
+  <h1>Punktestand</h1>
+  <p class="lede">Trage pro Team die Siege ein – die Rangliste rechnet sich selbst. Wertung 1 zählt alle Punkte einer Person zusammen, Wertung 2 geht an den Besitzer des Super-Bowl-Siegers.</p>
+
+  <div class="modebar" id="modebar">
+    <div>
+      <div class="k" id="mode-title">Gemeinsame Aufstellung</div>
+      <p id="mode-text">Teilnehmer und Teams stammen aus <code>pool.json</code>, die Ergebnisse kommen live von ESPN. Alle sehen denselben Stand.</p>
+    </div>
+    <button id="mode-btn">Lokal bearbeiten</button>
+  </div>
+
+  <!-- WERTUNG 1 -->
+  <div class="sec-head">
+    <h2>Wertung 1 · Punkte</h2>
+    <p id="w1-sub">Noch keine Teilnehmer erfasst.</p>
+  </div>
+  <div id="board" class="board"></div>
+  <div class="legend">
+    <span><i style="background:#5A7BA8"></i>Regular Season</span>
+    <span><i style="background:#FFB23F"></i>Playoffs</span>
+    <span><i style="background:#57D0E8"></i>Super-Bowl-Bonus</span>
+  </div>
+
+  <!-- WERTUNG 2 -->
+  <div class="sec-head">
+    <h2>Wertung 2 · Super Bowl</h2>
+    <p>Wer das siegreiche Team besitzt, gewinnt.</p>
+  </div>
+  <div id="sbcard" class="sbcard"></div>
+
+  <!-- TEILNEHMER -->
+  <div class="sec-head">
+    <h2>Teilnehmer</h2>
+    <p>Eine Person kann beliebig viele Teams halten.</p>
+  </div>
+  <div id="people" class="people"></div>
+  <p id="people-empty" class="empty-note">Noch niemand dabei. Namen eintragen und hinzufügen.</p>
+  <div class="toolbar edit-only">
+    <input type="text" id="new-person" placeholder="Name" maxlength="30" style="min-width:200px">
+    <button class="primary" id="add-person">Person hinzufügen</button>
+  </div>
+
+  <!-- TEAMS -->
+  <div class="sec-head">
+    <h2>Teams &amp; Ergebnisse</h2>
+    <p>PO = Playoff-Siege (max. 4). Der Super-Bowl-Sieg ist ein Playoff-Sieg plus Bonus.</p>
+  </div>
+  <div class="panel sync">
+    <div class="sync-main">
+      <div>
+        <div class="k">Ergebnisse abrufen</div>
+        <p class="sub">Holt Siege, Unentschieden, Playoff-Siege und den Super-Bowl-Sieger für alle 32 Teams von ESPN. Zuteilungen, Teilnehmer und Punkteregeln bleiben unberührt.</p>
+      </div>
+      <div class="toolbar">
+        <label for="season" style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Saison</label>
+        <input type="number" id="season" min="2000" max="2099" step="1" style="width:82px">
+        <button class="primary" id="sync">Jetzt abrufen</button>
+      </div>
+    </div>
+    <div id="sync-status" class="sync-status">Noch nichts abgerufen.</div>
+  </div>
+
+  <div class="toolbar" style="margin-bottom:12px">
+    <input type="text" id="filter" placeholder="Team suchen …" style="min-width:200px">
+    <label style="color:var(--muted);font-size:13px;display:flex;align-items:center;gap:7px">
+      <input type="checkbox" id="only-owned" style="accent-color:var(--amber)"> nur zugeteilte Teams
+    </label>
+    <button class="ghost" id="clear-sb">Super-Bowl-Sieger zurücksetzen</button>
+  </div>
+  <div class="tablescroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Team</th>
+          <th>Besitzer</th>
+          <th class="num">Siege</th>
+          <th class="num">Unent.</th>
+          <th class="num">PO</th>
+          <th class="num">SB</th>
+          <th style="text-align:right">Punkte</th>
+        </tr>
+      </thead>
+      <tbody id="teams"></tbody>
+    </table>
+  </div>
+
+  <!-- REGELN -->
+  <div class="sec-head">
+    <h2>Punkteregeln</h2>
+    <p>Vorgabe wie besprochen – jederzeit anpassbar.</p>
+  </div>
+  <div class="panel rules">
+    <div class="rule">
+      <label for="r-win">Sieg Regular Season</label>
+      <input type="number" id="r-win" min="0" step="1" value="3">
+      <small>Der Grundwert. Alles andere leitet sich davon ab.</small>
+    </div>
+    <div class="rule">
+      <label for="r-tie">Unentschieden</label>
+      <input type="number" id="r-tie" min="0" step="1" value="1">
+      <small>In der NFL selten, aber möglich.</small>
+    </div>
+    <div class="rule">
+      <label for="r-po">Playoff-Sieg</label>
+      <input type="number" id="r-po" min="0" step="1" value="6">
+      <small>Doppelt gewertet. Vier Runden: Wild Card, Divisional, Conference, Super Bowl.</small>
+    </div>
+    <div class="rule">
+      <label for="r-sb">Super-Bowl-Bonus</label>
+      <input type="number" id="r-sb" min="0" step="1" value="20">
+      <small>Kommt zum Playoff-Sieg dazu, ergibt also 26 für das Finale.</small>
+    </div>
+  </div>
+
+  <!-- DATEN -->
+  <div class="sec-head">
+    <h2>Daten</h2>
+    <p>Nichts wird automatisch gespeichert.</p>
+  </div>
+  <div class="toolbar">
+    <button class="primary" id="save-pool">Aufstellung sichern (pool.json)</button>
+    <button id="save-json">Vollen Stand sichern (JSON)</button>
+    <button id="load-json">Stand laden</button>
+    <button id="csv-rank">Rangliste als CSV</button>
+    <button id="csv-teams">Teams als CSV</button>
+    <button class="ghost edit-only" id="reset-all">Alles zurücksetzen</button>
+    <input type="file" id="file" accept=".json,application/json" hidden>
+  </div>
+  <p class="hint"><strong>pool.json</strong> enthält nur Teilnehmer und Team-Zuteilung – das ist die Datei, die neben die <code>index.html</code> auf GitHub gehört. Jeder Besucher lädt sie beim Öffnen und holt sich die Ergebnisse selbst bei ESPN, dadurch sehen alle denselben Stand.</p>
+  <p class="hint warn">Nichts wird automatisch gespeichert. Solange keine <code>pool.json</code> daneben liegt, gehen Eingaben beim Schliessen des Browsers verloren – sichere den vollen Stand dann als JSON. Die CSV-Dateien sind für Excel gedacht (Semikolon als Trennzeichen) und dienen dem Ausdruck, nicht dem Zurückladen.</p>
+
+  <footer>NFL-Pool · läuft komplett lokal im Browser</footer>
+</div>
+
+<script>
+"use strict";
+
+/* ---------------- Daten ---------------- */
+const NFL = [
+  ["AFC Ost",[["BUF","Buffalo Bills"],["MIA","Miami Dolphins"],["NE","New England Patriots"],["NYJ","New York Jets"]]],
+  ["AFC Nord",[["BAL","Baltimore Ravens"],["CIN","Cincinnati Bengals"],["CLE","Cleveland Browns"],["PIT","Pittsburgh Steelers"]]],
+  ["AFC Süd",[["HOU","Houston Texans"],["IND","Indianapolis Colts"],["JAX","Jacksonville Jaguars"],["TEN","Tennessee Titans"]]],
+  ["AFC West",[["DEN","Denver Broncos"],["KC","Kansas City Chiefs"],["LV","Las Vegas Raiders"],["LAC","Los Angeles Chargers"]]],
+  ["NFC Ost",[["DAL","Dallas Cowboys"],["NYG","New York Giants"],["PHI","Philadelphia Eagles"],["WAS","Washington Commanders"]]],
+  ["NFC Nord",[["CHI","Chicago Bears"],["DET","Detroit Lions"],["GB","Green Bay Packers"],["MIN","Minnesota Vikings"]]],
+  ["NFC Süd",[["ATL","Atlanta Falcons"],["CAR","Carolina Panthers"],["NO","New Orleans Saints"],["TB","Tampa Bay Buccaneers"]]],
+  ["NFC West",[["ARI","Arizona Cardinals"],["LAR","Los Angeles Rams"],["SF","San Francisco 49ers"],["SEA","Seattle Seahawks"]]]
+];
+
+function freshState(){
+  const teams = [];
+  NFL.forEach(([div,list]) => list.forEach(([abbr,name]) =>
+    teams.push({id:abbr, name, div, ownerId:null, wins:0, ties:0, po:0})
+  ));
+  return {version:1, rules:{win:3,tie:1,po:6,sb:20}, people:[], teams, sbWinner:null, lastSync:null};
+}
+let S = freshState();
+
+/* ---------------- Rechnen ---------------- */
+const teamById = id => S.teams.find(t => t.id === id);
+const personById = id => S.people.find(p => p.id === id);
+
+function teamPoints(t){
+  const r = S.rules;
+  const rs = t.wins * r.win + t.ties * r.tie;
+  const po = t.po * r.po;
+  const sb = (S.sbWinner === t.id) ? r.sb : 0;
+  return {rs, po, sb, total: rs + po + sb};
+}
+
+function standings(){
+  const rows = S.people.map(p => {
+    const teams = S.teams.filter(t => t.ownerId === p.id);
+    const acc = {rs:0, po:0, sb:0, total:0};
+    teams.forEach(t => {
+      const pts = teamPoints(t);
+      acc.rs += pts.rs; acc.po += pts.po; acc.sb += pts.sb; acc.total += pts.total;
+    });
+    return {person:p, teams, ...acc};
+  });
+  rows.sort((a,b) => b.total - a.total || a.person.name.localeCompare(b.person.name,"de"));
+  let rank = 0, prev = null;
+  rows.forEach((r,i) => { if(r.total !== prev){ rank = i+1; prev = r.total; } r.rank = rank; });
+  return rows;
+}
+
+/* ---------------- Rendern ---------------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function render(){ renderBoard(); renderSb(); renderPeople(); renderTeams(); }
+
+function renderBoard(){
+  const rows = standings();
+  const board = $("board");
+  const sub = $("w1-sub");
+  if(!rows.length){
+    board.innerHTML = '<div class="panel" style="color:var(--muted)">Sobald Teilnehmer erfasst sind, erscheint hier die Rangliste.</div>';
+    sub.textContent = "Noch keine Teilnehmer erfasst.";
+    return;
+  }
+  const assigned = S.teams.filter(t => t.ownerId).length;
+  sub.textContent = rows.length + " Teilnehmer · " + assigned + " von 32 Teams zugeteilt";
+  const max = Math.max(1, ...rows.map(r => r.total));
+  board.innerHTML = rows.map(r => {
+    const w = v => (v / max * 100).toFixed(2) + "%";
+    const chips = r.teams.length
+      ? r.teams.map(t => '<span class="chip' + (S.sbWinner===t.id?' sb':'') + '">' + t.id + '</span>').join("")
+      : '<span class="chip">kein Team</span>';
+    return '<div class="row' + (r.rank===1 && r.total>0 ? ' lead' : '') + '">' +
+      '<div class="rank">' + r.rank + '</div>' +
+      '<div class="who"><div class="name">' + esc(r.person.name) + '</div>' +
+      '<div class="chips">' + chips + '</div>' +
+      '<div class="bar"><span class="b-rs" style="width:' + w(r.rs) + '"></span>' +
+      '<span class="b-po" style="width:' + w(r.po) + '"></span>' +
+      '<span class="b-sb" style="width:' + w(r.sb) + '"></span></div></div>' +
+      '<div class="pts">' + r.total + '<small>Punkte</small></div></div>';
+  }).join("");
+}
+
+function renderSb(){
+  const c = $("sbcard");
+  if(!S.sbWinner){
+    c.innerHTML = '<div><div class="k">Champion</div><div class="v empty">Noch offen</div>' +
+      '<div class="sub">Markiere in der Team-Tabelle unter «SB» den Sieger.</div></div>';
+    return;
+  }
+  const t = teamById(S.sbWinner);
+  const owner = t.ownerId ? personById(t.ownerId) : null;
+  c.innerHTML =
+    '<div><div class="k">Champion</div><div class="v">' + esc(t.name) + '</div></div>' +
+    '<div style="text-align:right"><div class="k">Gewinner Wertung 2</div>' +
+    (owner
+      ? '<div class="v">' + esc(owner.name) + '</div>'
+      : '<div class="v empty">Team ist niemandem zugeteilt</div>') +
+    '</div>';
+}
+
+function renderPeople(){
+  const box = $("people");
+  $("people-empty").style.display = S.people.length ? "none" : "block";
+  box.innerHTML = S.people.map(p => {
+    const n = S.teams.filter(t => t.ownerId === p.id).length;
+    return '<div class="person"><span>' + esc(p.name) + '</span>' +
+      '<span class="chip">' + n + ' Teams</span>' +
+      '<button class="ghost edit-only" data-del-person="' + p.id + '" title="Entfernen">✕</button></div>';
+  }).join("");
+}
+
+function renderTeams(){
+  const q = $("filter").value.trim().toLowerCase();
+  const onlyOwned = $("only-owned").checked;
+  const opts = id => '<option value="">– frei –</option>' + S.people.map(p =>
+    '<option value="' + p.id + '"' + (p.id===id ? ' selected' : '') + '>' + esc(p.name) + '</option>').join("");
+  let html = "";
+  NFL.forEach(([div]) => {
+    const list = S.teams.filter(t => t.div === div
+      && (!q || t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q))
+      && (!onlyOwned || t.ownerId));
+    if(!list.length) return;
+    html += '<tr class="divhead"><td colspan="7">' + div + '</td></tr>';
+    list.forEach(t => {
+      const pts = teamPoints(t);
+      html += '<tr class="' + (t.ownerId ? 'owned' : '') + '">' +
+        '<td><span class="team-abbr">' + t.id + '</span><span class="team-name">' + t.name + '</span></td>' +
+        '<td><select data-owner="' + t.id + '">' + opts(t.ownerId) + '</select></td>' +
+        '<td class="num"><input type="number" min="0" max="17" data-f="wins" data-t="' + t.id + '" value="' + t.wins + '"></td>' +
+        '<td class="num"><input type="number" min="0" max="17" data-f="ties" data-t="' + t.id + '" value="' + t.ties + '"></td>' +
+        '<td class="num"><input type="number" min="0" max="4" data-f="po" data-t="' + t.id + '" value="' + t.po + '"></td>' +
+        '<td class="num"><input type="radio" name="sb" data-sb="' + t.id + '"' + (S.sbWinner===t.id ? ' checked' : '') + '></td>' +
+        '<td class="pt">' + pts.total + '</td></tr>';
+    });
+  });
+  $("teams").innerHTML = html || '<tr><td colspan="7" style="color:var(--muted)">Kein Team passt zum Filter.</td></tr>';
+  lockInputs();
+}
+
+/* ---------------- Eingaben ---------------- */
+$("add-person").addEventListener("click", addPerson);
+$("new-person").addEventListener("keydown", e => { if(e.key === "Enter") addPerson(); });
+function addPerson(){
+  const inp = $("new-person");
+  const name = inp.value.trim();
+  if(!name) { inp.focus(); return; }
+  S.people.push({id:"p" + Date.now() + Math.floor(Math.random()*1000), name});
+  inp.value = "";
+  inp.focus();
+  render();
+}
+
+$("people").addEventListener("click", e => {
+  const id = e.target.dataset.delPerson;
+  if(!id) return;
+  const p = personById(id);
+  const n = S.teams.filter(t => t.ownerId === id).length;
+  if(n && !confirm(p.name + " hat " + n + " Teams. Diese werden wieder frei. Fortfahren?")) return;
+  S.teams.forEach(t => { if(t.ownerId === id) t.ownerId = null; });
+  S.people = S.people.filter(x => x.id !== id);
+  render();
+});
+
+$("teams").addEventListener("change", e => {
+  const el = e.target;
+  if(el.dataset.owner){
+    teamById(el.dataset.owner).ownerId = el.value || null;
+    render();
+  } else if(el.dataset.f){
+    const t = teamById(el.dataset.t);
+    const max = el.dataset.f === "po" ? 4 : 17;
+    let v = parseInt(el.value, 10);
+    if(isNaN(v) || v < 0) v = 0;
+    if(v > max) v = max;
+    t[el.dataset.f] = v;
+    el.value = v;
+    render();
+  } else if(el.dataset.sb){
+    S.sbWinner = el.dataset.sb;
+    render();
+  }
+});
+
+$("filter").addEventListener("input", renderTeams);
+$("only-owned").addEventListener("change", renderTeams);
+$("clear-sb").addEventListener("click", () => { S.sbWinner = null; render(); });
+
+["win","tie","po","sb"].forEach(k => {
+  $("r-" + k).addEventListener("change", e => {
+    let v = parseInt(e.target.value, 10);
+    if(isNaN(v) || v < 0) v = 0;
+    e.target.value = v;
+    S.rules[k] = v;
+    render();
+  });
+});
+
+/* ---------------- Gemeinsame Aufstellung ---------------- */
+/* Liegt eine pool.json neben der Seite, gilt sie für alle Besucher.
+   Die Ergebnisse holt sich danach jeder Browser selbst bei ESPN.        */
+
+let shared = false, viewMode = false;
+
+async function loadSharedPool(){
+  let data;
+  try{
+    const res = await fetch("pool.json", {cache:"no-store"});
+    if(!res.ok) return false;
+    data = await res.json();
+  }catch(err){ return false; }
+
+  try{
+    const names = (data.people || []).map(p => typeof p === "string" ? p : p.name).filter(Boolean);
+    if(!names.length) throw new Error("Keine Teilnehmer in pool.json");
+    S.people = names.map((name, i) => ({id: "s" + i, name: String(name)}));
+    if(data.rules) S.rules = Object.assign(S.rules, data.rules);
+
+    const byName = {};
+    S.people.forEach(p => byName[p.name.toLowerCase()] = p.id);
+    const map = data.teams || {};
+    Object.keys(map).forEach(abbr => {
+      const t = teamById(String(abbr).toUpperCase());
+      const owner = byName[String(map[abbr]).toLowerCase()];
+      if(t && owner) t.ownerId = owner;
+    });
+
+    ["win","tie","po","sb"].forEach(k => $("r-" + k).value = S.rules[k]);
+    shared = true;
+    setMode(true);
+    return true;
+  }catch(err){
+    setSync("pool.json gefunden, aber nicht lesbar: " + err.message, "bad");
+    return false;
+  }
+}
+
+function setMode(view){
+  viewMode = view;
+  document.body.classList.toggle("viewmode", viewMode);
+  $("modebar").classList.toggle("on", shared);
+  $("mode-title").textContent = viewMode ? "Gemeinsame Aufstellung" : "Lokal geändert";
+  $("mode-text").textContent = viewMode
+    ? "Teilnehmer und Teams stammen aus pool.json, die Ergebnisse kommen live von ESPN. Alle sehen denselben Stand."
+    : "Deine Änderungen gelten nur in diesem Browser und verschwinden beim Neuladen. Für alle sichtbar werden sie erst, wenn du die Aufstellung sicherst und die neue pool.json hochlädst.";
+  $("mode-btn").textContent = viewMode ? "Lokal bearbeiten" : "Zurück zur Ansicht";
+  render();
+}
+
+$("mode-btn").addEventListener("click", () => {
+  if(viewMode) setMode(false);
+  else if(confirm("Zurück zur gemeinsamen Aufstellung? Deine lokalen Änderungen gehen verloren.")) location.reload();
+});
+
+function lockInputs(){
+  if(!viewMode) return;
+  document.querySelectorAll("#teams select, #teams input").forEach(el => el.disabled = true);
+}
+
+/* ---------------- Ergebnisse von ESPN ---------------- */
+/* Quelle: die offenen JSON-Endpunkte unter site.api.espn.com – ohne Schlüssel,
+   aber inoffiziell. Fällt das aus, bleibt die Eingabe von Hand.               */
+
+const ESPN_ALIAS = {WSH:"WAS", OAK:"LV", SD:"LAC", SDG:"LAC", STL:"LAR", LA:"LAR",
+                    ARZ:"ARI", JAC:"JAX", CLV:"CLE", HST:"HOU", BLT:"BAL"};
+const normAbbr = a => { const x = String(a||"").toUpperCase(); return ESPN_ALIAS[x] || x; };
+const known = id => S.teams.some(t => t.id === id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function defaultSeason(){
+  const d = new Date();
+  return d.getMonth() >= 2 ? d.getFullYear() : d.getFullYear() - 1;
+}
+
+async function espnWeek(season, seasontype, week){
+  const url = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard"
+            + "?dates=" + season + "&seasontype=" + seasontype + "&week=" + week;
+  const res = await fetch(url, {cache:"no-store"});
+  if(!res.ok) throw new Error("HTTP " + res.status);
+  return res.json();
+}
+
+/* Wertet eine Woche aus. mode "po" zählt Playoff-Siege statt Regular-Season-Siege. */
+function collectWeek(data, tally, mode){
+  let counted = 0, champion = null;
+  (data.events || []).forEach(ev => {
+    const comp = (ev.competitions || [])[0];
+    if(!comp) return;
+    const st = (ev.status && ev.status.type) || (comp.status && comp.status.type);
+    if(!st || !st.completed) return;
+
+    const cs = comp.competitors || [];
+    if(cs.length !== 2) return;
+    const ids = cs.map(c => normAbbr(c.team && c.team.abbreviation));
+    if(!ids.every(known)) return;          // Pro Bowl und Ähnliches fällt hier raus
+
+    const scores = cs.map(c => parseInt(c.score, 10));
+    counted++;
+
+    if(mode !== "po" && scores[0] === scores[1] && !isNaN(scores[0])){
+      ids.forEach(id => tally[id].ties++);
+      return;
+    }
+    let wi = cs.findIndex(c => c.winner === true);
+    if(wi < 0) wi = scores[0] > scores[1] ? 0 : 1;
+    if(mode === "po") tally[ids[wi]].po++; else tally[ids[wi]].wins++;
+
+    if(mode === "po"){
+      const label = ((comp.notes || []).map(n => n.headline || "").join(" ")
+                   + " " + (ev.name || "") + " " + (ev.season && ev.season.slug || "")).toLowerCase();
+      if(label.includes("super bowl")) champion = ids[wi];
+    }
+  });
+  return {counted, champion};
+}
+
+async function syncResults(opts){
+  const silent = opts === true || (opts && opts.silent === true);
+  const season = parseInt($("season").value, 10);
+  if(isNaN(season)){ setSync("Bitte eine gültige Saison eintragen.", "bad"); return; }
+  if(!silent && !confirm("Siege, Unentschieden und Playoff-Siege aller Teams werden aus den ESPN-Daten der Saison "
+    + season + " neu gesetzt. Eigene Eingaben in diesen Feldern gehen dabei verloren.\n\n"
+    + "Teilnehmer, Zuteilungen und Punkteregeln bleiben erhalten.")) return;
+
+  const btn = $("sync");
+  btn.disabled = true;
+  const tally = {};
+  S.teams.forEach(t => tally[t.id] = {wins:0, ties:0, po:0});
+  let games = 0, failed = 0, tried = 0, champion = null, sbWeek = null;
+
+  try{
+    for(let w = 1; w <= 18; w++){
+      setSync("Regular Season – Woche " + w + " von 18 …", "busy");
+      tried++;
+      try{ games += collectWeek(await espnWeek(season, 2, w), tally, null).counted; }
+      catch(err){ failed++; }
+      await sleep(120);
+    }
+    for(let w = 1; w <= 5; w++){
+      if(w === 4) continue;                 // Woche 4 der Postseason ist der Pro Bowl
+      setSync("Playoffs – Runde " + w + " …", "busy");
+      tried++;
+      try{
+        const r = collectWeek(await espnWeek(season, 3, w), tally, "po");
+        games += r.counted;
+        if(r.champion){ champion = r.champion; }
+        else if(w === 5 && r.counted === 1){ sbWeek = true; }
+      }catch(err){ failed++; }
+      await sleep(120);
+    }
+  } finally {
+    btn.disabled = false;
+  }
+
+  if(failed === tried){
+    setSync("Kein Zugriff auf ESPN – keine der " + tried + " Anfragen kam durch. "
+          + "Meist blockiert der Browser den Abruf, wenn die Datei direkt per Doppelklick geöffnet wird. "
+          + "Abhilfe: Ordner mit einem lokalen Webserver ausliefern, etwa \"python -m http.server\", "
+          + "und die Seite über localhost aufrufen.", "bad");
+    return;
+  }
+
+  S.teams.forEach(t => { const x = tally[t.id]; t.wins = x.wins; t.ties = x.ties; t.po = x.po; });
+  if(champion) S.sbWinner = champion;
+  else if(sbWeek){
+    // Fallback: das einzige Spiel der letzten Postseason-Woche ist das Finale
+    const last = S.teams.filter(t => t.po > 0).sort((a,b) => b.po - a.po)[0];
+    if(last && last.po >= 3) S.sbWinner = last.id;
+  }
+  S.lastSync = {when: new Date().toISOString(), season, games};
+  render();
+
+  if(games === 0){
+    setSync("Verbindung steht, aber für die Saison " + season + " sind noch keine Spiele beendet. "
+          + "Nach dem ersten Spieltag nochmals abrufen.", "");
+  } else {
+    setSync(syncLabel() + (failed ? "  ·  " + failed + " von " + tried + " Abfragen fehlgeschlagen" : ""),
+            failed ? "bad" : "good");
+  }
+}
+
+function syncLabel(){
+  if(!S.lastSync) return "Noch nichts abgerufen.";
+  const d = new Date(S.lastSync.when);
+  const p = n => String(n).padStart(2, "0");
+  return S.lastSync.games + " Spiele ausgewertet · Saison " + S.lastSync.season
+       + " · Stand " + p(d.getDate()) + "." + p(d.getMonth()+1) + "." + d.getFullYear()
+       + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+function setSync(msg, cls){
+  const el = $("sync-status");
+  el.textContent = msg;
+  el.className = "sync-status " + (cls || "");
+}
+
+$("sync").addEventListener("click", () => syncResults());
+$("season").value = defaultSeason();
+
+/* ---------------- Speichern & Export ---------------- */
+function download(name, text, mime){
+  const blob = new Blob([text], {type: mime + ";charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+const stamp = () => new Date().toISOString().slice(0,10);
+const csvCell = v => '"' + String(v).replace(/"/g,'""') + '"';
+
+$("save-json").addEventListener("click", () =>
+  download("nfl-pool-" + stamp() + ".json", JSON.stringify(S, null, 2), "application/json"));
+
+$("load-json").addEventListener("click", () => $("file").click());
+$("file").addEventListener("change", e => {
+  const f = e.target.files[0];
+  if(!f) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    try{
+      const data = JSON.parse(fr.result);
+      if(!data.teams || !data.people) throw new Error("Falscher Aufbau");
+      const base = freshState();
+      base.rules = Object.assign(base.rules, data.rules || {});
+      base.people = data.people;
+      base.sbWinner = data.sbWinner || null;
+      base.lastSync = data.lastSync || null;
+      data.teams.forEach(t => {
+        const target = base.teams.find(x => x.id === t.id);
+        if(target) Object.assign(target, {ownerId:t.ownerId ?? null, wins:t.wins|0, ties:t.ties|0, po:t.po|0});
+      });
+      S = base;
+      ["win","tie","po","sb"].forEach(k => $("r-" + k).value = S.rules[k]);
+      if(S.lastSync){ $("season").value = S.lastSync.season; setSync(syncLabel(), "good"); }
+      render();
+    }catch(err){
+      alert("Die Datei lässt sich nicht lesen: " + err.message + "\nErwartet wird eine JSON-Datei, die diese Seite gesichert hat.");
+    }
+    e.target.value = "";
+  };
+  fr.readAsText(f);
+});
+
+$("csv-rank").addEventListener("click", () => {
+  const head = ["Rang","Name","Punkte","Regular Season","Playoffs","Super-Bowl-Bonus","Teams"];
+  const lines = standings().map(r => [r.rank, r.person.name, r.total, r.rs, r.po, r.sb,
+    r.teams.map(t => t.id).join(" ")].map(csvCell).join(";"));
+  download("nfl-pool-rangliste-" + stamp() + ".csv", "\uFEFF" + head.map(csvCell).join(";") + "\n" + lines.join("\n"), "text/csv");
+});
+
+$("csv-teams").addEventListener("click", () => {
+  const head = ["Team","Kürzel","Division","Besitzer","Siege","Unentschieden","Playoff-Siege","Super Bowl","Punkte"];
+  const lines = S.teams.map(t => {
+    const o = t.ownerId ? personById(t.ownerId) : null;
+    return [t.name, t.id, t.div, o ? o.name : "", t.wins, t.ties, t.po,
+      S.sbWinner === t.id ? "ja" : "", teamPoints(t).total].map(csvCell).join(";");
+  });
+  download("nfl-pool-teams-" + stamp() + ".csv", "\uFEFF" + head.map(csvCell).join(";") + "\n" + lines.join("\n"), "text/csv");
+});
+
+$("reset-all").addEventListener("click", () => {
+  if(!confirm("Alle Teilnehmer, Zuteilungen und Ergebnisse löschen?")) return;
+  S = freshState();
+  ["win","tie","po","sb"].forEach(k => $("r-" + k).value = S.rules[k]);
+  render();
+});
+
+$("save-pool").addEventListener("click", () => {
+  const names = S.people.map(p => p.name);
+  const lower = names.map(n => n.toLowerCase());
+  const dupes = names.filter((n,i) => lower.indexOf(n.toLowerCase()) !== i);
+  if(dupes.length && !confirm("Doppelte Namen: " + dupes.join(", ") +
+     "\nDie Zuteilung wird über den Namen aufgelöst – das führt zu Verwechslungen. Trotzdem sichern?")) return;
+  const teams = {};
+  S.teams.filter(t => t.ownerId).forEach(t => teams[t.id] = personById(t.ownerId).name);
+  download("pool.json", JSON.stringify({
+    hinweis: "Teilnehmer und Team-Zuteilung des Pools. Die Ergebnisse holt die Seite live bei ESPN.",
+    rules: S.rules,
+    people: names,
+    teams: teams
+  }, null, 2), "application/json");
+});
+
+/* ---------------- Start ---------------- */
+render();
+loadSharedPool().then(ok => { if(ok) syncResults({silent:true}); });
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "hinweis": "Teilnehmer und Team-Zuteilung des Pools. Die Ergebnisse holt die Seite live bei ESPN. Format der Zuteilung: \"KUERZEL\": \"Name\".",
+  "rules": {
+    "win": 3,
+    "tie": 1,
+    "po": 6,
+    "sb": 20
+  },
+  "people": [
+    "Harry",
+    "Aaron",
+    "Roger",
+    "Nathi",
+    "Kässu",
+    "Misch",
+    "Marco"
+  ],
+  "teams": {
+  }
+}
